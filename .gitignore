@@ -1,0 +1,29 @@
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+#VSCode
+.vscode/
+
+# Node
+node_modules/
+npm-debug.log
+
+# Tokens
+.env
+.env.local
+
+# Arquivos temporários
+*.tmp
+tmp/
+temp/
+
+# Backups
+*.bak
+
+# Apps Script local
+.clasp.json
+

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+   
+  <head>
+    <base target="_top">
+
+    <style>
+
+      body{
+        font-family: Arial, sans-serif;
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      h3{
+        margin-top: 0;
+        color: #1f1f1f;
+      }
+
+      label{
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      input, select, textarea{
+        width: 100%;
+        padding: 6px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+      }
+
+      button{
+        margin-top: 5px;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: #1967d2;
+        color: white;
+        font-weight: bold;
+      }
+
+      button:hover{
+        background-color: #1557b0;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h3>Gerador de UTM</h3>
+      <p style="font-size:11px; color:#777;">
+        Versão 1.0
+      </p>
+
+    <label>Buscar marca</label><br>
+      <input type="text" id="buscarMarca" oninput="buscarMarca()"><br>
+      
+
+        <br><br>
+
+      <label>Opções encontradas</label><br>
+      <select id="opcoesMarca" onchange="selecionarMarca()">
+        <option value="">Selecione uma opção</option>
+      </select>
+
+      <br><br>
+
+    <label>URL</label><br>
+      <input type="text" id="url"><br><br>
+
+    <label>Marca</label><br>
+      <input type="text" id="marca"><br><br>
+
+    <label>Data de publicação</label><br>
+      <input type="date" id="data"><br><br>
+      
+    <label>Campanha</label><br>
+      <input type="text" id="campanha"><br><br>
+    
+    <label>Source</label><br>
+      <select id="source">
+        <option value="">Selecione um source</option>
+      </select><br><br>
+      
+    <label>Medium</label><br>
+      <select id="medium">
+        <option value="">Selecione um medium</option>
+      </select><br><br>
+
+    <label>Content</label><br>
+      <select id="content">
+        <option value="">Selecione um content</option>
+      </select><br><br>
+
+    <button type="button" onclick="gerarUTM()">Gerar UTM</button>
+    <button type="button" onclick="copiarUTM()">Copiar UTM</button>
+    <button type="button" onclick="novoFormato()">Novo formato</button>
+    <button type="button" onclick="limparFormulario()">Limpar Formulário</button><br><br>
+
+    <div id="mensagem" style="display:none; padding:8px; margin:10px 0; border-radius:6px; font-size:12px;"></div>
+
+    <label>UTM gerada</label><br>
+      <textarea id="resultado" rows="4" cols="30" readonly></textarea>
+
+    <script>
+
+      let mensagemTimer;
+
+      function mostrarMensagem(texto, tipo){
+        
+        const mensagem = document.getElementById("mensagem");
+
+        clearTimeout(mensagemTimer);
+
+        mensagem.style.display = "block";
+        mensagem.textContent = texto;
+
+        if(tipo === "sucesso"){
+          mensagem.style.backgroundColor = "#e6f4ea";
+          mensagem.style.color = "#137333";
+          mensagem.style.border = "1px solid #b7dfc3";
+        }else if (tipo === "erro"){
+          mensagem.style.backgroundColor = "#fce8e6";
+          mensagem.style.color = "#c5221f";
+          mensagem.style.border = "1px solid #f4b4ae";
+        }else{
+          mensagem.style.backgroundColor = "#e8f0fe";
+          mensagem.style.color = "#1967d2";
+          mensagem.style.border = "1px solid #aecbfa";
+        }
+
+        setTimeout(function(){
+          mensagem.style.display = "none";
+        }, 5000);
+      }
+      
+      function copiarUTM(){
+
+        const utm = document.getElementById("resultado").value;
+
+        if (!utm){
+          mostrarMensagem("Nenhuma UTM foi gerada ainda.", "erro");
+          return;
+        }
+
+        navigator.clipboard.writeText(utm)
+          .then(function(){
+            mostrarMensagem("UTM copiada com sucesso!", "sucesso");
+          })
+          .catch(function (){
+            mostrarMensagem("Não foi possível copiar a UTM.", "erro");
+          });
+      }
+
+      function novoFormato(){
+
+        document.getElementById("source").value = "";
+        document.getElementById("medium").value = "";
+        document.getElementById("content").value = "";
+        document.getElementById("resultado").value = "";
+
+      }
+
+      function limparFormulario(){
+
+        novoFormato();
+        
+        document.getElementById("data").value = "";
+        document.getElementById("url").value = "";
+        document.getElementById("marca").value = "";
+        document.getElementById("campanha").value = "";
+        document.getElementById("buscarMarca").value = "";
+        document.getElementById("opcoesMarca").innerHTML = '<option value="">Selecione uma opção</option>';
+
+      }
+
+      document.addEventListener("DOMContentLoaded", function(){
+        
+        carregarSources();
+        carregarMediums();
+        carregarContents();
+
+      });
+
+      function carregarSources(){
+
+        google.script.run
+          .withSuccessHandler(function (sources){
+
+            const select = document.getElementById("source");
+
+            select.innerHTML = '<option value="">Selecione um source</option>';
+
+            sources.forEach(function (source){
+
+              const option = document.createElement("option");
+
+              option.value = source;
+              option.text = source;
+
+              select.appendChild(option);
+
+            });
+
+          })
+          .obterSources();
+      }
+
+      function carregarMediums(){
+
+        google.script.run
+         .withSuccessHandler(function (mediums){
+
+          const select = document.getElementById("medium");
+
+          select.innerHTML = '<option value="">Selecione um medium</option>';
+
+          mediums.forEach(function (medium){
+
+            const option = document.createElement("option");
+
+            option.value = medium;
+            option.text = medium;
+
+            select.appendChild(option);
+          });
+         })
+         .obterMediums();
+      }
+
+      function carregarContents(){
+
+        google.script.run
+         .withSuccessHandler(function (contents){
+
+          const select = document.getElementById("content");
+
+          select.innerHTML = '<option value="">Selecione um content</option>';
+
+          contents.forEach(function (content){
+
+            const option = document.createElement("option");
+
+            option.value = content;
+            option.text = content;
+
+            select.appendChild(option);
+          });
+         })
+         .obterContents();
+      }
+
+     function gerarUTM(){
+       const url = document.getElementById("url").value;
+       const marca = document.getElementById("marca").value;
+       const data = document.getElementById("data").value;
+       const campanha = document.getElementById("campanha").value;
+       const source = document.getElementById("source").value;
+       const medium = document.getElementById("medium").value;
+       const content = document.getElementById("content").value;
+
+       google.script.run
+       .withSuccessHandler(function(resultado){
+         document.getElementById("resultado").value = resultado;
+         mostrarMensagem("UTM gerada e salva com sucesso!", "sucesso");
+       })
+       .withFailureHandler(function(erro){
+         mostrarMensagem("Erro ao gerar UTM: " + erro.message, "erro");
+       })
+       .salvarLinhaUTMPeloFormulario({
+         url: url,
+         marca: marca,
+         data: data,
+         campanha: campanha,
+         source: source,
+         medium: medium,
+         content: content
+       });
+      }
+
+      let ultimoTermoBuscado = "";
+
+     function buscarMarca(){
+       const termo = document.getElementById("buscarMarca").value;
+       const select = document.getElementById("opcoesMarca");
+
+       ultimoTermoBuscado = termo;
+
+       select.innerHTML = '<option value="">Selecione uma opção</option>';
+
+       if (!termo.trim()){
+         return;
+        }
+
+       google.script.run
+        .withSuccessHandler(function (opcoes){
+          const termoAtualNoCampo = document.getElementById("buscarMarca").value;
+
+          if (termoAtualNoCampo !== ultimoTermoBuscado){
+            return;
+          }
+
+          select.innerHTML = '<option value="">Selecione uma opção</option>';
+
+          opcoes.forEach(function (item){
+            const option = document.createElement("option");
+            option.value = item[1];
+            option.text = item[0];
+            select.appendChild(option);
+          });
+        })
+        .withFailureHandler(function (erro){
+          alert("Erro ao buscar marcas: " + erro.message);
+        })
+        .buscarOpcoesBase(termo);
+     }
+
+     function selecionarMarca(){
+       const select = document.getElementById("opcoesMarca");
+
+       if (!select.value){
+         document.getElementById("marca").value = "";
+         document.getElementById("url").value = "";
+        }
+
+       const marca = select.options[select.selectedIndex].text;
+       const url = select.value;
+
+       document.getElementById("marca").value = marca;
+       document.getElementById("url").value = url;
+      }
+    </script>
+  </body>
+</html>
