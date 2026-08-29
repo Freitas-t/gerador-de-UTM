@@ -3,8 +3,9 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
   ui
-    .createMenu("Automação")
-    .addItem("Abrir gerador de Utm", "abrirSidebar")
+    .createMenu("UTMs")
+    .addItem("Abrir gerador", "abrirSidebar")
+    .addSeparator()
+    .addItem("Limpar Resultados", "limparResultados")
     .addToUi();
-  
 }

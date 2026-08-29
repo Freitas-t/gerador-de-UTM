@@ -65,21 +65,58 @@ function gerarUTMPeloFormulario(dados){
 
 function salvarLinhaUTMPeloFormulario(dados){
   
+  const linha = gerarRegistroUTM(
+    dados,
+    dados.source,
+    dados.medium,
+    dados.content
+  );
+
+  if (!linha){
+    return "Preencha todos os campos obrigatórios.";
+  }
+
+  salvarLinhaUTM(linha);
+
+  const utm = linha[7];
+  const linkCurto = linha[8];
+
+  if (linkCurto){
+    return linkCurto;
+  }
+  return utm;
+}
+
+function gerarRegistroUTM(dados, source, medium, content){
+
   const url = dados.url;
   const data = normalizarData(dados.data);
   const marca = normalizarTexto(dados.marca);
   const campanha = normalizarTexto(dados.campanha);
-  const source = normalizarTexto(dados.source);
-  const medium = normalizarTexto(dados.medium);
-  const content = normalizarTexto(dados.content);
+
+  source = normalizarTexto(source);
+  medium = normalizarTexto(medium);
+  content = normalizarTexto(content);
 
   if (!url || !data || !marca || !campanha || !source || !medium || !content){
-    return "Preencha todos os campos antes de gerar a UTM.";
+    return null;
   }
 
   const campaign = marca + "_" + campanha + "_" + data;
-
-  const utm = montarUTM(url, source, medium, campaign, content);
+  
+  const utm = montarUTM(
+    url, 
+    source, 
+    medium, 
+    campaign, 
+    content
+  );
+  
+  const linkCurto = gerarLinkCurtoSeNecessario(
+    utm, 
+    source, 
+    content
+  );
 
   const linha = [
     data,
@@ -89,10 +126,41 @@ function salvarLinhaUTMPeloFormulario(dados){
     source, 
     medium,
     content,
-    utm
+    utm,
+    linkCurto
   ];
 
-  salvarLinhaUTM(linha);
+  return linha;
+}
 
-  return utm;
+function gerarPadraoMeta(dados){
+
+  const facebook = gerarRegistroUTM(
+    dados,
+    "facebook",
+    "social",
+    "feed"
+  );
+
+  const instagram = gerarRegistroUTM(
+    dados,
+    "instagram",
+    "social",
+    "story"
+  );
+
+  if (!facebook || !instagram){
+    return{ 
+      sucesso: false,
+      mensagem: "Preencha todos os campos obrigatórios"
+    };
+  }
+  salvarLinhaUTM(facebook);
+  salvarLinhaUTM(instagram);
+
+  return{
+    sucesso: true,
+    facebook: facebook[8],
+    instagram: instagram[7],
+  };
 }
