@@ -363,6 +363,15 @@
         document.getElementById("campanha").value = "";
         document.getElementById("buscarMarca").value = "";
         document.getElementById("sugestoesMarca").innerHTML = "";
+        document.getElementById("resultado").value = "";
+        document.getElementById("resultadoFacebook").value = "";
+        document.getElementById("resultadoInstagram").value = "";
+
+        const botao = document.getElementById("btnGerar");
+        
+        botao.disabled = false;
+        botao.textContent ="Gerar link";
+        
 
       }
 
@@ -518,11 +527,29 @@
 
        google.script.run
        .withSuccessHandler(function(resultado){
+
          document.getElementById("resultado").value = resultado;
-         mostrarMensagem("Link gerado e salvo com sucesso!", "sucesso");
+
+         mostrarMensagem(
+          "Link gerado e salvo com sucesso!", 
+          "sucesso"
+        );
+
+        botao.disabled = false;
+        botao.textContent = "Gerar link";
+
        })
+
        .withFailureHandler(function(erro){
-         mostrarMensagem("Erro ao gerar link: " + erro.message, "erro");
+         
+         mostrarMensagem(
+          "Erro ao gerar link: " + erro.message, 
+          "erro"
+        );
+
+        botao.disabled = false;
+        botao.textContent = "Gerar link";
+
        })
        .salvarLinhaUTMPeloFormulario({
          url: url,
@@ -532,7 +559,7 @@
          source: source,
          medium: medium,
          content: content
-       });
+       });       
       }
 
       let buscaId = 0;
