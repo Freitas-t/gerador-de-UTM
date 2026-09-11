@@ -108,6 +108,39 @@
         color: #5f6368;
         letter-spacing: 0.6px;
       }
+      .modo-geracao {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .modo-geracao .opcao-modo {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .modo-geracao .opcao-modo input[type="radio"] {
+        width: auto;
+        margin: 0;
+        padding: 0;
+        flex: 0 0 auto;
+      }
+
+      .modo-geracao .opcao-modo span {
+        display: inline;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        line-height: 1.3;
+        text-align: left;
+      }
 
     </style>
   </head>
@@ -151,29 +184,45 @@
     <label>Modo de geração</label>
 
     <div class="modo-geracao">
-      <label>
-        Padrão
-        <input
+      <label class="opcao-modo">
+          <input
           type="radio"
           name="modo"
           value="meta"
           checked
+          onchange="alteraModoGeracao()">
+          <span><strong>Padrão</strong>Facebook feed + Instagram Stories</span>
+      </label>
+      
+
+      <label class="opcao-modo">
+          <input
+          type="radio"
+          name="modo"
+          value="facebook"
           onchange="alteraModoGeracao()"
           >
-          
+          <span><strong>Facebook</strong></span>
       </label>
 
-      <small>Facebook feed + Instagram Stories</small>
+      <label class="opcao-modo">
+        <input
+          type="radio"
+          name="modo"
+          value="instagram"
+          onchange="alteraModoGeracao()"
+          >
+          <span><strong>Instagram</strong></span>
+      </label>
 
-      <label>
-        Personalizado
+      <label class="opcao-modo">
         <input
           type="radio"
           name="modo"
           value="personalizado"
           onchange="alteraModoGeracao()"
           >
-          
+          <span><strong>Personalizado</strong></span>
       </label>
     </div>  
 
@@ -234,45 +283,47 @@
 
 
 <div id="resultadoMeta">
+ </div id="blocoFacebook">
+    <label>Link Facebook</label><br>
 
-  <label>Link Facebook</label><br>
+    <textarea
+      id="resultadoFacebook"
+      rows="4"
+      cols="30"
+      readonly>
+    </textarea>
 
-  <textarea
-    id="resultadoFacebook"
-    rows="4"
-    cols="30"
-    readonly>
-  </textarea>
+    <br>
 
-  <br>
+    <button
+      class="btn btn-secondary"
+      type="button"
+      onclick="copiarFacebook()">
+      Copiar Facebook
+    </button>
+ </div>
 
-  <button
-    class="btn btn-secondary"
-    type="button"
-    onclick="copiarFacebook()">
-    Copiar Facebook
-  </button>
-
+ <div id="blocoInstagram">
   <br><br>
 
-  <label>Link Instagram</label><br>
+    <label>Link Instagram</label><br>
 
-  <textarea
-    id="resultadoInstagram"
-    rows="4"
-    cols="30"
-    readonly>
-  </textarea>
+    <textarea
+      id="resultadoInstagram"
+      rows="4"
+      cols="30"
+      readonly>
+    </textarea>
 
-  <br>
+    <br>
 
-  <button
-    class="btn btn-secondary"
-    type="button"
-    onclick="copiarInstagram()">
-    Copiar Instagram
-  </button>
-
+    <button
+      class="btn btn-secondary"
+      type="button"
+      onclick="copiarInstagram()">
+      Copiar Instagram
+    </button>
+ </div>
 </div> 
     
   <div class="acoes-secundarias">
@@ -519,6 +570,98 @@
 
        return;
       } 
+
+      if (modo === "facebook"){
+
+        google.script.run
+          .withSuccessHandler(function(resultado){
+
+            if (!resultado.sucesso){
+
+              mostrarMensagem(
+                resultado.mensagem,
+                "erro"
+              );
+
+              botao.disabled = false;
+              botao.textContent = "Gerar link";
+
+              return;
+            }
+
+            document.getElementById("resultadoFacebook").value =
+              resultado.facebook;
+
+            mostrarMensagem(
+              "Link do Facebook gerado e salvo com sucesso!",
+              "sucesso"
+            );
+
+            botao.disabled = false;
+            botao.textContent = "Gerar link";
+
+          })
+          .withFailureHandler(function(erro){
+
+            mostrarMensagem(
+              "Erro ao gerar link: " + erro.message,
+              "erro"
+            );
+
+            botao.disabled = false;
+            botao.textContent = "Gerar link";
+
+          })
+          .gerarSomenteFacebook(dados);
+
+        return;
+      }
+
+      if (modo === "instagram"){
+
+        google.script.run
+          .withSuccessHandler(function(resultado){
+
+            if (!resultado.sucesso){
+
+              mostrarMensagem(
+                resultado.mensagem,
+                "erro"
+              );
+
+              botao.disabled = false;
+              botao.textContent = "Gerar link";
+
+              return;
+            }
+
+            document.getElementById("resultadoInstagram").value =
+              resultado.instagram;
+
+            mostrarMensagem(
+              "Link do Instagram gerado e salvo com sucesso!",
+              "sucesso"
+            );
+
+            botao.disabled = false;
+            botao.textContent = "Gerar link";
+
+          })
+          .withFailureHandler(function(erro){
+
+            mostrarMensagem(
+              "Erro ao gerar link: " + erro.message,
+              "erro"
+            );
+
+            botao.disabled = false;
+            botao.textContent = "Gerar link";
+
+          })
+          .gerarSomenteInstagram(dados);
+
+        return;
+      }
        
        const source = document.getElementById("source").value;
        const medium = document.getElementById("medium").value;
@@ -642,14 +785,37 @@
           "resultadoMeta"
         );
 
+        const blocofacebook = document.getElementById(
+          "blocoFacebook"
+        );
+
+        const blocoInstagram = document.getElementById(
+          "blocoInstagram"
+        );
+
+        camposPersonalizados.style.display = "none";
+        resultadoPersonalizado.style.display = "none";
+        resultadoMeta.style.display = "block";
+
         if (modo === "meta"){
-          camposPersonalizados.style.display = "none";
-          resultadoPersonalizado.style.display = "none";
-          resultadoMeta.style.display = "block";
-        } else {
-          camposPersonalizados.style.display = "block";
-          resultadoPersonalizado.style.display = "block";
+          blocoFacebook.style.display = "block";
+          blocoInstagram.style.display = "block";
+        }
+
+        if (modo === "facebook"){
+          blocoFacebook.style.display = "block";
+          blocoInstagram.style.display = "none";
+        }
+
+        if (modo === "instagram"){
+          blocoFacebook.style.display = "none";
+          blocoInstagram.style.display = "block";
+        }
+
+        if (modo === "personalizado"){
           resultadoMeta.style.display = "none";
+          resultadoPersonalizado.style.display = "block";
+          camposPersonalizados.style.display = "block";
         }
       }
 

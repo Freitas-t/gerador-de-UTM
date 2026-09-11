@@ -164,3 +164,49 @@ function gerarPadraoMeta(dados){
     instagram: instagram[7],
   };
 }
+
+function gerarSomenteFacebook(dados){
+
+  const facebook = gerarRegistroUTM(
+    dados,
+    "facebook",
+    "social",
+    "feed"
+  );
+
+  if (!facebook){
+    return {
+      sucesso: false,
+      mensagem: "Preencha todos os campos obrigatórios."
+    };
+  }
+  salvarLinhaUTM(facebook);
+
+  return{
+    sucesso: true,
+    facebook: facebook[8]
+  };
+}
+
+function gerarSomenteInstagram(dados){
+
+  const instagram = gerarRegistroUTM(
+    dados,
+    "instagram",
+    "social",
+    "story"
+  );
+
+  if (!instagram){
+    return {
+      sucesso: false,
+      mensage: "Preencha todos os campos obrigatórios."
+    };
+  }
+  salvarLinhaUTM(instagram);
+
+  return{
+    sucesso: true,
+    instagram: instagram[7]
+  };
+}
